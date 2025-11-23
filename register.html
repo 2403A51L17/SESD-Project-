@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - MentorConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#4f46e5', // Indigo-600
+                        'primary-dark': '#818cf8', // Indigo-400
+                        'secondary': '#06b6d4', // Cyan-600
+                        'background-light': '#f8fafc',
+                        'background-dark': '#1e293b',
+                        'card-light': '#ffffff',
+                        'card-dark': '#334155',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center p-4 transition-colors duration-500">
+
+    <!-- Flash Messages Display -->
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-96 mx-4 md:mx-auto p-4 rounded-lg shadow-lg transition-all duration-300
+                        {% if category == 'success' %} bg-green-500 text-white {% elif category == 'danger' %} bg-red-500 text-white {% elif category == 'warning' %} bg-yellow-500 text-white {% else %} bg-blue-500 text-white {% endif %}">
+                {{ message }}
+                <button onclick="this.parentElement.remove()" class="float-right text-white hover:text-gray-200">&times;</button>
+            </div>
+        {% endfor %}
+        <script>
+            setTimeout(() => {
+                document.querySelectorAll('.fixed.top-4').forEach(el => el.remove());
+            }, 5000);
+        </script>
+    {% endif %}
+
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="absolute top-4 right-4 p-2 rounded-full bg-card-light dark:bg-card-dark text-gray-800 dark:text-primary-dark shadow-md hover:ring-2 ring-primary transition-all duration-300">
+        <svg id="sun-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <svg id="moon-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+    </button>
+
+    <div class="w-full max-w-lg bg-card-light dark:bg-card-dark p-8 md:p-10 rounded-2xl shadow-xl dark:shadow-2xl transition-all duration-500 border border-gray-200 dark:border-slate-600">
+        <h1 class="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-8 text-center">
+            <span class="text-secondary dark:text-primary-dark">Join</span> MentorConnect
+        </h1>
+        
+        <form method="POST" class="space-y-5">
+            <!-- General Fields -->
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username:</label>
+                <input type="text" name="username" id="username" value="{{ form_data.username|default('') }}" required 
+                       class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm">
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email:</label>
+                <input type="email" name="email" id="email" value="{{ form_data.email|default('') }}" required 
+                       class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm">
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password:</label>
+                <input type="password" name="password" id="password" required 
+                       class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm">
+            </div>
+            
+            <div>
+                <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">I am a:</label>
+                <select name="role" id="role" 
+                        class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm bg-white dark:bg-slate-700 appearance-none">
+                    <option value="student" {% if form_data.role == 'student' %}selected{% endif %}>Student</option>
+                    <option value="mentor" {% if form_data.role == 'mentor' %}selected{% endif %}>Mentor</option>
+                </select>
+            </div>
+
+            <!-- Student Fields (Initially shown by default) -->
+            <div id="student-fields" class="space-y-5">
+                <h3 class="text-lg font-bold pt-2 text-gray-800 dark:text-gray-200 border-t dark:border-slate-600">Student Details</h3>
+                
+                <div>
+                    <label for="student_branch" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Engineering Branch:</label>
+                    <select name="student_branch" id="student_branch" 
+                            class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm bg-white dark:bg-slate-700 appearance-none">
+                        <option value="CSE" {% if form_data.student_branch == 'CSE' %}selected{% endif %}>CSE (Computer Science Engineering)</option>
+                        <option value="ECE" {% if form_data.student_branch == 'ECE' %}selected{% endif %}>ECE (Electronics and Communication Engineering)</option>
+                        <option value="EEE" {% if form_data.student_branch == 'EEE' %}selected{% endif %}>EEE (Electrical and Electronics Engineering)</option>
+                        <option value="MECH" {% if form_data.student_branch == 'MECH' %}selected{% endif %}>MECH (Mechanical Engineering)</option>
+                        <option value="CIVIL" {% if form_data.student_branch == 'CIVIL' %}selected{% endif %}>CIVIL (Civil Engineering)</option>
+                        <option value="IT" {% if form_data.student_branch == 'IT' %}selected{% endif %}>IT (Information Technology)</option>
+                        <option value="OTHERS" {% if form_data.student_branch == 'OTHERS' %}selected{% endif %}>Other Engineering/Branch</option>
+                    </select>
+                </div>
+
+                <div class="flex space-x-4">
+                    <div class="flex-1">
+                        <label for="student_year" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Year of Study:</label>
+                        <select name="student_year" id="student_year" 
+                                class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm bg-white dark:bg-slate-700 appearance-none">
+                            <option value="1" {% if form_data.student_year == '1' %}selected{% endif %}>1st Year</option>
+                            <option value="2" {% if form_data.student_year == '2' %}selected{% endif %}>2nd Year</option>
+                            <option value="3" {% if form_data.student_year == '3' %}selected{% endif %}>3rd Year</option>
+                            <option value="4" {% if form_data.student_year == '4' %}selected{% endif %}>4th Year</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="student_semester" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Semester:</label>
+                        <select name="student_semester" id="student_semester" 
+                                class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm bg-white dark:bg-slate-700 appearance-none">
+                            <option value="1" {% if form_data.student_semester == '1' %}selected{% endif %}>1st Semester</option>
+                            <option value="2" {% if form_data.student_semester == '2' %}selected{% endif %}>2nd Semester</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mentor Fields (Initially hidden) -->
+            <div id="mentor-fields" class="space-y-5 hidden">
+                <h3 class="text-lg font-bold pt-2 text-gray-800 dark:text-gray-200 border-t dark:border-slate-600">Mentor Details</h3>
+
+                <div>
+                    <label for="mentor_branch" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teaching Branch:</label>
+                    <select name="mentor_branch" id="mentor_branch" 
+                            class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm bg-white dark:bg-slate-700 appearance-none">
+                        <option value="CSE" {% if form_data.mentor_branch == 'CSE' %}selected{% endif %}>CSE (Computer Science Engineering)</option>
+                        <option value="ECE" {% if form_data.mentor_branch == 'ECE' %}selected{% endif %}>ECE (Electronics and Communication Engineering)</option>
+                        <option value="EEE" {% if form_data.mentor_branch == 'EEE' %}selected{% endif %}>EEE (Electrical and Electronics Engineering)</option>
+                        <option value="MECH" {% if form_data.mentor_branch == 'MECH' %}selected{% endif %}>MECH (Mechanical Engineering)</option>
+                        <option value="CIVIL" {% if form_data.mentor_branch == 'CIVIL' %}selected{% endif %}>CIVIL (Civil Engineering)</option>
+                        <option value="IT" {% if form_data.mentor_branch == 'IT' %}selected{% endif %}>IT (Information Technology)</option>
+                        <option value="OTHERS" {% if form_data.mentor_branch == 'OTHERS' %}selected{% endif %}>Other Engineering/Branch</option>
+                    </select>
+                </div>
+                
+                <div class="flex space-x-4">
+                    <div class="flex-1">
+                        <label for="mentor_year" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teaching Year:</label>
+                        <select name="mentor_year" id="mentor_year" 
+                                class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm bg-white dark:bg-slate-700 appearance-none">
+                            <option value="1" {% if form_data.mentor_year == '1' %}selected{% endif %}>1st Year</option>
+                            <option value="2" {% if form_data.mentor_year == '2' %}selected{% endif %}>2nd Year</option>
+                            <option value="3" {% if form_data.mentor_year == '3' %}selected{% endif %}>3rd Year</option>
+                            <option value="4" {% if form_data.mentor_year == '4' %}selected{% endif %}>4th Year</option>
+                        </select>
+                    </div>
+                    <div class="flex-1">
+                        <label for="mentor_subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assigned Subject:</label>
+                        <input type="text" name="mentor_subject" id="mentor_subject" value="{{ form_data.mentor_subject|default('') }}" placeholder="e.g., Data Structures, Thermodynamics"
+                               class="w-full p-3 border border-gray-300 dark:border-slate-500 dark:bg-slate-600 dark:text-gray-100 rounded-lg focus:ring-primary focus:border-primary transition duration-150 ease-in-out shadow-sm">
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" 
+                    class="w-full py-3 px-4 bg-secondary text-white font-semibold rounded-lg shadow-md hover:bg-cyan-700 dark:hover:bg-cyan-500 focus:outline-none focus:ring-4 focus:ring-secondary focus:ring-opacity-50 transition duration-200 ease-in-out transform hover:scale-[1.01] ">
+                Register Account
+            </button>
+        </form>
+        
+        <p class="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
+            Already have an account? 
+            <a href="{{ url_for('login') }}" class="font-semibold text-primary dark:text-primary-dark hover:underline transition duration-150">
+                Login here
+            </a>
+        </p>
+    </div>
+
+    <script>
+        const html = document.documentElement;
+        const toggleButton = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const roleSelect = document.getElementById('role');
+        const studentFields = document.getElementById('student-fields');
+        const mentorFields = document.getElementById('mentor-fields');
+
+        // --- Theme Toggle Logic ---
+        function updateIcon(isDark) {
+            if (isDark) {
+                moonIcon.classList.remove('hidden');
+                sunIcon.classList.add('hidden');
+            } else {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+        const storedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let isDark = (storedTheme === 'dark' || (!storedTheme && prefersDark));
+        if (isDark) {
+            html.classList.add('dark');
+        }
+        updateIcon(isDark);
+
+        toggleButton.addEventListener('click', () => {
+            isDark = html.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateIcon(isDark);
+        });
+
+        // --- Dynamic Form Logic ---
+        function toggleFields() {
+            if (roleSelect.value === 'student') {
+                studentFields.classList.remove('hidden');
+                mentorFields.classList.add('hidden');
+            } else {
+                studentFields.classList.add('hidden');
+                mentorFields.classList.remove('hidden');
+            }
+        }
+
+        // Initialize and listen for changes
+        toggleFields(); 
+        roleSelect.addEventListener('change', toggleFields);
+    </script>
+</body>
+</html>
